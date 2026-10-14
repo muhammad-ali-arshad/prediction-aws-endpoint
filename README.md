@@ -5,11 +5,14 @@ using the lab's fixed `random.seed` / `random.uniform` procedure, and returns
 `round(a1*x1 + a2*x2 + a3*x3 + b, 2)` as JSON.
 
 The API listens on **5500 inside the container**. Docker Compose publishes
-**5000 on the EC2 host**, as required for evaluation. Gunicorn serves the app.
+**5500 on the EC2 host**, as requested. Gunicorn serves the app.
+
+The lab handout specifies public port **5000**. This configuration uses **5500**;
+confirm the evaluator will use that port before submission.
 
 ```text
 GitHub push → Jenkins webhook → EC2 agent → build image → push Docker Hub
-            → docker compose up → verify prediction on localhost:5000
+            → docker compose up → verify prediction on localhost:5500
 ```
 
 ## 1. Prepare the EC2 Jenkins agent
@@ -37,9 +40,9 @@ docker info
 docker compose version
 ```
 
-Use Compose v2 with `up --wait` support. Allow inbound TCP **5000** in the
+Use Compose v2 with `up --wait` support. Allow inbound TCP **5500** in the
 EC2 security group for the instructor's API calls. Jenkins' webhook URL
-must also be reachable from GitHub (for example, port 8080 if that is where
+must also be reachable from GitHub (for example, port 8081 if that is where
 your Jenkins server is exposed). The Jenkins agent needs outbound access to
 GitHub, Docker Hub, and PyPI.
 
@@ -76,14 +79,14 @@ docker compose up -d --no-build --force-recreate --wait --wait-timeout 60 api
 ```
 
 The next stage verifies the registration number, three numerical predictions,
-and HTTP 400 for invalid numeric input through host port 5000. Build failures
+and HTTP 400 for invalid numeric input through host port 5500. Build failures
 show the container logs. Successful jobs leave the service running.
 
 ## 3. Configure the GitHub webhook
 
 In GitHub repository **Settings → Webhooks → Add webhook**:
 
-- Payload URL: `http://JENKINS_PUBLIC_IP:8080/github-webhook/`
+- Payload URL: `http://JENKINS_PUBLIC_IP:8081/github-webhook/`
   (use your actual Jenkins base URL and keep the trailing slash).
 - Content type: `application/json`.
 - Events: **Just the push event**.
@@ -116,7 +119,7 @@ There is no scheduled Jenkins trigger.
 Confirm the API is unreachable **from another computer**:
 
 ```bash
-curl --max-time 5 'http://EC2_PUBLIC_IP:5000/predict?x1=2&x2=3&x3=1'
+curl --max-time 5 'http://EC2_PUBLIC_IP:5500/predict?x1=2&x2=3&x3=1'
 ```
 
 Leave it down. A new GitHub push will run the pipeline and start it again.
@@ -129,8 +132,8 @@ check, but confirm that timing on your actual EC2 instance.
 ## 5. Test the public endpoint
 
 ```bash
-curl 'http://EC2_PUBLIC_IP:5000/predict?x1=2&x2=3&x3=1'
-python3 scripts/verify_api.py http://EC2_PUBLIC_IP:5000
+curl 'http://EC2_PUBLIC_IP:5500/predict?x1=2&x2=3&x3=1'
+python3 scripts/verify_api.py http://EC2_PUBLIC_IP:5500
 ```
 
 Expected response for `(2, 3, 1)`:

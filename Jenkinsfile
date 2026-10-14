@@ -1,5 +1,5 @@
 pipeline {
-    // This agent must run on the EC2 instance serving public port 5000.
+    // This agent must run on the EC2 instance serving public port 5500.
     agent { label 'ec2-docker' }
 
     options {
@@ -55,7 +55,7 @@ pipeline {
 
         stage('Verify prediction') {
             steps {
-                sh 'python3 scripts/verify_api.py http://127.0.0.1:5000'
+                sh 'python3 scripts/verify_api.py http://127.0.0.1:5500'
             }
         }
     }
