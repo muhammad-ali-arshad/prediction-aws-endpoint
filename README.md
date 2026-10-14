@@ -1,4 +1,4 @@
-# Linear regression API — FA23-BDS-024----
+# Linear regression API — FA23-BDS-024-----
 
 The supplied Flask API uses seed `24`, generates `a1`, `a2`, `a3`, and `b`
 using the lab's fixed `random.seed` / `random.uniform` procedure, and returns
