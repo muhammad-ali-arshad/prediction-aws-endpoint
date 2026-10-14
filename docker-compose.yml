@@ -1,0 +1,17 @@
+name: prediction-aws-endpoint
+
+services:
+  api:
+    image: ${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/prediction-aws-endpoint:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5500"
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5500/predict?x1=2&x2=3&x3=1', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      start_period: 5s
+      retries: 6
